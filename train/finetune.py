@@ -29,7 +29,7 @@ from transformers import (
     TrainingArguments
 )
 from transformers.trainer_utils import get_last_checkpoint
-from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_int8_training
+from peft import LoraConfig, TaskType, get_peft_model
 
 from train.arguments import ModelArguments, DataArguments
 from train.data import CustomDataset
