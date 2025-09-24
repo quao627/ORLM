@@ -8,11 +8,11 @@
 # =============================================================================
 
 # Model and Data Paths
-MODEL_NAME_OR_PATH="meta-llama/Meta-Llama-3-8B-Instruct"  # LLaMA-3-8B-Instruct model
+MODEL_NAME_OR_PATH="Qwen/Qwen2-7B-Instruct"  # LLaMA-3-8B-Instruct model
 DATA_PATH="train_test_data/converted_data_prompt_completion_new_100.json"  # Your converted data
 # DATA_PATH="train_test_data/converted_data_messages_new_100.json"  # Your converted data
 ## use the base model name and add the new model name
-SAVE_PATH="/orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--AlphaOpt_ORLM_Meta-Llama-3-8B-Instruct_ft"
+SAVE_PATH="/orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--AlphaOpt_ORLM_Qwen2-7B-Instruct_ft_new_100"
 
 # Training Configuration
 NUM_GPUS=1  # Number of GPUs to use (set to 1 for single GPU training)
