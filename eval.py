@@ -172,7 +172,8 @@ def load_test_data(test_file):
 def main(args):
     assert isinstance(args.topk, int)
     assert args.decoding_method in ["greedy", "sampling"]
-    assert os.path.exists(args.model_name_or_path), "We only support local model path!"
+    # Allow both local paths and Hugging Face model IDs
+    # assert os.path.exists(args.model_name_or_path), "We only support local model path!"
 
     # Load test data if provided
     test_data = []
