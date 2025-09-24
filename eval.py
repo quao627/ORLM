@@ -82,13 +82,10 @@ def compile_script(script_content, timeout=300):
     }
 
 def assess_code_correctness(code, ground_truth=None, numerical_tolerance=0.05, timeout=300):
-    """Assess various aspects of code correctness."""
+    """Assess code correctness focusing on execution success and mathematical accuracy."""
     correctness_metrics = {
-        "syntactic_correctness": False,
-        "semantic_correctness": False,
         "execution_success": False,
-        "mathematical_accuracy": False,
-        "optimization_formulation": False
+        "mathematical_accuracy": False
     }
     
     if not code:
@@ -98,44 +95,21 @@ def assess_code_correctness(code, ground_truth=None, numerical_tolerance=0.05, t
             "execution_state": "No code provided"
         }
     
-    # Check syntactic correctness
-    try:
-        compile(code, '<string>', 'exec')
-        correctness_metrics["syntactic_correctness"] = True
-    except SyntaxError as e:
-        return correctness_metrics, {
-            "execution_result": f"Syntax Error: {str(e)}",
-            "execution_best_solution": None,
-            "execution_state": f"Syntax Error: {str(e)}"
-        }
+    # Execute the code directly using Gurobi
+    execution_output = compile_script(code, timeout=timeout)
     
-    # Check for required optimization components
-    gurobipy_imports = any(keyword in code.lower() for keyword in ['import gurobipy', 'from gurobipy', 'import gp', 'from gurobipy import'])
-    model_creation = 'model =' in code.lower() or 'gp.model' in code.lower()
-    variables = any(keyword in code.lower() for keyword in ['addvar', 'addvars'])
-    constraints = any(keyword in code.lower() for keyword in ['addconstr', 'addconstrs'])
-    objective = any(keyword in code.lower() for keyword in ['setobjective', 'objective'])
-    solve = any(keyword in code.lower() for keyword in ['optimize', 'solve'])
-    
-    if all([gurobipy_imports, model_creation, variables, constraints, objective, solve]):
-        correctness_metrics["optimization_formulation"] = True
-    
-    # Execute the code with added script
-    enhanced_code = code + ADD_SCRIPT
-    execution_output = compile_script(enhanced_code, timeout=timeout)
-    
+    # Check execution success
     if "Execution Successful" in execution_output["execution_state"]:
         correctness_metrics["execution_success"] = True
-        correctness_metrics["semantic_correctness"] = True
         
-        # Check mathematical accuracy against ground truth using Gurobi test_optimality
-        if ground_truth is not None and execution_output["execution_best_solution"]:
+        # Check mathematical accuracy using test_optimality
+        if ground_truth is not None:
             try:
                 if execution_output["execution_best_solution"] == "No Best Solution":
                     if str(ground_truth).lower() == "no best solution":
                         correctness_metrics["mathematical_accuracy"] = True
                 else:
-                    # Use Gurobi test_optimality function for more robust comparison
+                    # Use Gurobi test_optimality function for mathematical accuracy
                     optimality_result = test_optimality(code, float(ground_truth))
                     if optimality_result == "correct":
                         correctness_metrics["mathematical_accuracy"] = True
@@ -208,11 +182,8 @@ def main(args):
     results = []
     overall_metrics = {
         "total_samples": 0,
-        "syntactic_correctness": 0,
-        "semantic_correctness": 0,
         "execution_success": 0,
         "mathematical_accuracy": 0,
-        "optimization_formulation": 0,
         "code_extraction_success": 0
     }
     
@@ -239,8 +210,7 @@ def main(args):
                 result_entry.update(execution_output)
                 
                 # Update overall metrics
-                for metric in ["syntactic_correctness", "semantic_correctness", "execution_success", 
-                              "mathematical_accuracy", "optimization_formulation"]:
+                for metric in ["execution_success", "mathematical_accuracy"]:
                     if correctness_metrics[metric]:
                         overall_metrics[metric] += 1
                 
@@ -257,11 +227,8 @@ def main(args):
             else:
                 # No code found
                 result_entry.update({
-                    "syntactic_correctness": False,
-                    "semantic_correctness": False,
                     "execution_success": False,
                     "mathematical_accuracy": False,
-                    "optimization_formulation": False,
                     "execution_result": "No code found",
                     "execution_best_solution": None,
                     "execution_state": "No code found"
@@ -280,21 +247,17 @@ def main(args):
     
     # Calculate and display final metrics
     final_metrics = {}
-    for metric in ["syntactic_correctness", "semantic_correctness", "execution_success", 
-                   "mathematical_accuracy", "optimization_formulation", "code_extraction_success"]:
+    for metric in ["execution_success", "mathematical_accuracy", "code_extraction_success"]:
         if overall_metrics["total_samples"] > 0:
             final_metrics[metric] = overall_metrics[metric] / overall_metrics["total_samples"]
         else:
             final_metrics[metric] = 0.0
     
     print("\n" + "="*50)
-    print("CORRECTNESS EVALUATION RESULTS")
+    print("EVALUATION RESULTS")
     print("="*50)
     print(f"Total samples evaluated: {overall_metrics['total_samples']}")
     print(f"Code extraction success: {final_metrics['code_extraction_success']:.3f}")
-    print(f"Syntactic correctness: {final_metrics['syntactic_correctness']:.3f}")
-    print(f"Optimization formulation: {final_metrics['optimization_formulation']:.3f}")
-    print(f"Semantic correctness: {final_metrics['semantic_correctness']:.3f}")
     print(f"Execution success: {final_metrics['execution_success']:.3f}")
     print(f"Mathematical accuracy: {final_metrics['mathematical_accuracy']:.3f}")
     
