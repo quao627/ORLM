@@ -10,6 +10,7 @@
 # Model and Data Paths
 MODEL_NAME_OR_PATH="meta-llama/Meta-Llama-3-8B"  # LLaMA-3-8B model
 # DATA_PATH="train_test_data/converted_data_messages_new_100.json"  # Your converted data
+DATA_PATH="train_test_data/converted_data_prompt_completion_new_100.json"  # Your converted data
 SAVE_PATH="./output_llama3_8b_full_tuning"  # Where to save the model
 
 # Training Configuration
