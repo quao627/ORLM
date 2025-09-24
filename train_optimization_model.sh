@@ -8,25 +8,22 @@
 # =============================================================================
 
 # Model and Data Paths
-MODEL_NAME_OR_PATH="meta-llama/Llama-2-7b-hf"  # Change to your base model
+MODEL_NAME_OR_PATH="meta-llama/Meta-Llama-3-8B"  # LLaMA-3-8B model
 DATA_PATH="train_test_data/converted_data_messages.json"  # Your converted data
-SAVE_PATH="./output_optimization_model"  # Where to save the model
+SAVE_PATH="./output_llama3_8b_full_tuning"  # Where to save the model
 
 # Training Configuration
-NUM_GPUS=4  # Number of GPUs available
+NUM_GPUS=8  # Number of GPUs available (increased for full tuning)
 BATCH_SIZE_PER_GPU=1  # Batch size per GPU (adjust based on GPU memory)
-TOTAL_BATCH_SIZE=16  # Total effective batch size across all GPUs
+TOTAL_BATCH_SIZE=32  # Total effective batch size across all GPUs
 PREPROCESSING_NUM_WORKERS=8  # Number of workers for data preprocessing
 MAX_SEQ_LENGTH=4096  # Maximum sequence length (adjust based on your data)
-LEARNING_RATE=2e-5  # Learning rate (typical for LLM finetuning)
-NUM_TRAIN_EPOCHS=3  # Number of training epochs
+LEARNING_RATE=1e-5  # Learning rate (lower for full parameter tuning)
+NUM_TRAIN_EPOCHS=2  # Number of training epochs (reduced for full tuning)
 
 # Advanced Options
-USE_LORA=true  # Set to true to use LoRA (recommended for efficiency)
-LORA_RANK=32  # LoRA rank
-LORA_ALPHA=32  # LoRA alpha
-LORA_DROPOUT=0.1  # LoRA dropout
-LORA_TARGET_MODULES="[q_proj,k_proj,v_proj,o_proj]"  # LoRA target modules
+USE_LORA=false  # Set to false for full parameter tuning
+USE_AUTH_TOKEN=true  # Required for LLaMA-3 models
 
 # =============================================================================
 # CALCULATED PARAMETERS (DO NOT MODIFY)
@@ -38,8 +35,8 @@ GRADIENT_ACC_STEPS=$(($TOTAL_BATCH_SIZE/$NUM_GPUS/$BATCH_SIZE_PER_GPU))
 # VALIDATION
 # =============================================================================
 
-echo "🚀 Starting optimization model training..."
-echo "=========================================="
+echo "🚀 Starting LLaMA-3-8B full parameter tuning..."
+echo "==============================================="
 echo "Model: $MODEL_NAME_OR_PATH"
 echo "Data: $DATA_PATH"
 echo "Output: $SAVE_PATH"
@@ -50,8 +47,9 @@ echo "Gradient accumulation steps: $GRADIENT_ACC_STEPS"
 echo "Max sequence length: $MAX_SEQ_LENGTH"
 echo "Learning rate: $LEARNING_RATE"
 echo "Training epochs: $NUM_TRAIN_EPOCHS"
-echo "Use LoRA: $USE_LORA"
-echo "=========================================="
+echo "Use LoRA: $USE_LORA (FULL PARAMETER TUNING)"
+echo "Use Auth Token: $USE_AUTH_TOKEN"
+echo "==============================================="
 
 # Check if data file exists
 if [ ! -f "$DATA_PATH" ]; then
@@ -84,8 +82,8 @@ torchrun \
     --gradient_accumulation_steps $GRADIENT_ACC_STEPS \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 1000 \
-    --save_total_limit 3 \
+    --save_steps 500 \
+    --save_total_limit 2 \
     --preprocessing_num_workers $PREPROCESSING_NUM_WORKERS \
     --ddp_timeout 14400 \
     --max_seq_length $MAX_SEQ_LENGTH \
@@ -93,17 +91,14 @@ torchrun \
     --lr_scheduler_type linear \
     --warmup_ratio 0.03 \
     --num_train_epochs $NUM_TRAIN_EPOCHS \
-    --logging_steps 10 \
+    --logging_steps 5 \
     --report_to "tensorboard" \
     --gradient_checkpointing True \
     --deepspeed train/configs/stage3_no_offloading_bf16.json \
     --overwrite_output_dir \
     --bf16 True \
     --use_lora $USE_LORA \
-    --lora_rank $LORA_RANK \
-    --lora_alpha $LORA_ALPHA \
-    --lora_dropout $LORA_DROPOUT \
-    --lora_target_modules $LORA_TARGET_MODULES \
+    --use_auth_token $USE_AUTH_TOKEN \
     --remove_unused_columns False
 
 echo "🎉 Training completed!"
