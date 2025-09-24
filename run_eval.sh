@@ -1,14 +1,15 @@
 #!/bin/bash
 
 datasets=(
-    "complexor.json"
-    "industryor_test.json"
-    "mamo_complex_test.json"
-    "mamo_easy.json"
-    "nl4opt_test.json"
-    "nlp4lp_test.json"
-    "optibench.json"
-    "logior_test.json"
+#    "complexor.json"
+#    "industryor_test.json"
+#    "mamo_complex_test.json"
+#    "mamo_easy.json"
+#    "nl4opt_test.json"
+#    "nlp4lp_test.json"
+#    "optibench.json"
+#    "logior_test.json"
+     "logior.json"
 )
 
 for dataset in "${datasets[@]}"; do
