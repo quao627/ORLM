@@ -285,7 +285,7 @@ def main(args):
     
     # Save results
     if args.output_file:
-        os.makedirs(os.path.dirname(args.output_file) if os.path.dirname(args.output_file) else '.', exist_ok=True)
+        os.makedirs(os.path.dirname(args.output_file), exist_ok=True)
         with open(args.output_file, 'w') as f:
             for result in results:
                 f.write(json.dumps(result, ensure_ascii=False) + '\n')
@@ -313,7 +313,8 @@ def main(args):
     
     # Save metrics
     if args.output_file:
-        metrics_file = args.output_file.replace('.jsonl', '.metrics.json')
+        metrics_file = args.output_file.replace('.json', '_metrics.json')
+
         with open(metrics_file, 'w') as f:
             json.dump(final_metrics, f, indent=2)
         print(f"Metrics saved to {metrics_file}")
