@@ -11,7 +11,7 @@ from vllm import LLM, SamplingParams
 from tqdm import tqdm
 
 TEMPLATE_q2mc_en = r"""
-Below is an operations research question. Build a mathematical model and corresponding python code using `coptpy` that appropriately addresses the question.
+Below is an operations research question. Build a mathematical model and corresponding python code using `gurobipy` that appropriately addresses the question.
 
 # Question:
 {Question}
