@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from utils.gurobi import execute_gurobi, test_optimality
 
 TEMPLATE_q2mc_en = r"""
-Below is an operations research question. First, formulate the problem as an optimization problem. Then, according to the formulated optimization problem, write python code that uses 'gurobipy' as a solver to solve the optimization problem. You should only return a complete python code that can be executed without any error to solve the optimization problem.
+Below is an operations research question. You should write python code that uses 'gurobipy' as a solver to solve the optimization problem. You should only return a complete python code that can be executed without any error to solve the optimization problem.
 
 # Question:
 {Question}
