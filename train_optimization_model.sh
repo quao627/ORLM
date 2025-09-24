@@ -16,8 +16,8 @@ SAVE_PATH="/orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--Alp
 
 # Training Configuration
 NUM_GPUS=1  # Number of GPUs to use (set to 1 for single GPU training)
-BATCH_SIZE_PER_GPU=4  # Batch size per GPU (optimized for H200 140GB)
-TOTAL_BATCH_SIZE=4  # Total effective batch size (same as per GPU when using 1 GPU)
+BATCH_SIZE_PER_GPU=2  # Batch size per GPU (optimized for H200 140GB)
+TOTAL_BATCH_SIZE=2  # Total effective batch size (same as per GPU when using 1 GPU)
 PREPROCESSING_NUM_WORKERS=0  # Number of workers for data preprocessing
 MAX_SEQ_LENGTH=8192  # Maximum sequence length (can use full context)
 LEARNING_RATE=2e-5  # Learning rate (can be higher with larger batch size)
