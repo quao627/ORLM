@@ -9,9 +9,12 @@ import concurrent.futures
 from collections import Counter
 from vllm import LLM, SamplingParams
 from tqdm import tqdm
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+from utils.gurobi import execute_gurobi, test_optimality
 
 TEMPLATE_q2mc_en = r"""
-Below is an operations research question. Fisrt, formulate the probelm as a optimziation problem. Then according to the formualted problem, write python code that uses 'gurobipy' to solve the optimization problem.
+Below is an operations research question. First, formulate the problem as an optimization problem. Then according to the formulated problem, write python code that uses 'gurobipy' to solve the optimization problem.
 
 # Question:
 {Question}
@@ -23,7 +26,7 @@ ONE_QUESTION = r"""
 A lab has 1000 units of medicinal ingredients to make two pills, a large pill and a small pill. A large pill requires 3 units of medicinal ingredients and 2 units of filler. A small pill requires 2 units of medicinal ingredients and 1 unit of filler. The lab has to make at least 100 large pills. However, since small pills are more popular at least 60% of the total number of pills must be small. How many of each should be made to minimize the total number of filler material needed?
 """
 
-ADD_SCRIPT = '\nif model.status == COPT.OPTIMAL:\n    print(f"Just print the best solution: {model.objval}")\nelse:\n    print("No Best Solution")'
+ADD_SCRIPT = '\nif model.status == GRB.OPTIMAL:\n    print(f"Just print the best solution: {model.objVal}")\nelse:\n    print("No Best Solution")'
 
 def majority_voting(pred_answers):
     """Count occurrences and return the most frequent answer."""
@@ -43,7 +46,7 @@ def extract_code_from_output(output):
     return output[start+9:end].strip()
 
 def compile_script(script_content, timeout=300):
-    """Execute Python script and capture results."""
+    """Execute Python script and capture results using Gurobi evaluation."""
     target_dir = './eval_execute'
     os.makedirs(target_dir, exist_ok=True)
 
@@ -52,36 +55,25 @@ def compile_script(script_content, timeout=300):
         tmp_file.write(script_content.encode())
 
     try:
-        process = subprocess.run(['python', tmp_file_name], text=True, 
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
-                               timeout=timeout, check=True)
-        execution_result = process.stdout
-        execution_best_solution_start_pos = execution_result.find("Just print the best solution:")
+        # Use Gurobi execution function instead of subprocess
+        result = execute_gurobi(script_content)
         
-        if execution_best_solution_start_pos != -1:
-            execution_best_solution = execution_result[execution_best_solution_start_pos:].replace("Just print the best solution:", "").strip()
-            execution_best_solution_end_pos = execution_best_solution.find("\n")
-            if execution_best_solution_end_pos != -1:
-                execution_best_solution = execution_best_solution[:execution_best_solution_end_pos]
+        if result["success"]:
+            execution_best_solution = str(result["value"])
             execution_state = "Execution Successful and Best Solution Found"
+            execution_result = f"Optimal value: {result['value']}"
         else:
-            if "No Best Solution" in execution_result:
-                execution_best_solution = "No Best Solution"
-                execution_state = "Execution Successful but No Best Solution Found"
-            else:
-                execution_best_solution = None
-                execution_state = "Execution Successful but Out of Expectation"
+            execution_best_solution = None
+            execution_state = f"Execution Failed: {result['value']}"
+            execution_result = result["value"]
                 
-    except subprocess.TimeoutExpired as e:
-        execution_result = e.stdout if e.stdout else "Timeout error"
+    except Exception as e:
+        execution_result = f"Execution error: {str(e)}"
         execution_best_solution = None
-        execution_state = "Execution Failed: Timeout"
-    except subprocess.CalledProcessError as e:
-        execution_result = e.stderr if e.stderr else "Compilation error"
-        execution_best_solution = None
-        execution_state = f"Execution Failed: {e.returncode}"
+        execution_state = f"Execution Failed: {str(e)}"
     finally:
-        os.remove(tmp_file_name)
+        if os.path.exists(tmp_file_name):
+            os.remove(tmp_file_name)
 
     return {
         "execution_result": execution_result,
@@ -118,14 +110,14 @@ def assess_code_correctness(code, ground_truth=None, numerical_tolerance=0.05, t
         }
     
     # Check for required optimization components
-    coptpy_imports = any(keyword in code.lower() for keyword in ['import coptpy', 'from coptpy'])
-    model_creation = 'model =' in code.lower() or 'env.createmodel' in code.lower()
+    gurobipy_imports = any(keyword in code.lower() for keyword in ['import gurobipy', 'from gurobipy', 'import gp', 'from gurobipy import'])
+    model_creation = 'model =' in code.lower() or 'gp.model' in code.lower()
     variables = any(keyword in code.lower() for keyword in ['addvar', 'addvars'])
-    constraints = any(keyword in code.lower() for keyword in ['addconstr', 'addconstrs', 'addlconstr'])
+    constraints = any(keyword in code.lower() for keyword in ['addconstr', 'addconstrs'])
     objective = any(keyword in code.lower() for keyword in ['setobjective', 'objective'])
     solve = any(keyword in code.lower() for keyword in ['optimize', 'solve'])
     
-    if all([coptpy_imports, model_creation, variables, constraints, objective, solve]):
+    if all([gurobipy_imports, model_creation, variables, constraints, objective, solve]):
         correctness_metrics["optimization_formulation"] = True
     
     # Execute the code with added script
@@ -136,22 +128,16 @@ def assess_code_correctness(code, ground_truth=None, numerical_tolerance=0.05, t
         correctness_metrics["execution_success"] = True
         correctness_metrics["semantic_correctness"] = True
         
-        # Check mathematical accuracy against ground truth
+        # Check mathematical accuracy against ground truth using Gurobi test_optimality
         if ground_truth is not None and execution_output["execution_best_solution"]:
             try:
                 if execution_output["execution_best_solution"] == "No Best Solution":
                     if str(ground_truth).lower() == "no best solution":
                         correctness_metrics["mathematical_accuracy"] = True
                 else:
-                    pred_value = float(execution_output["execution_best_solution"])
-                    gt_value = float(ground_truth)
-                    
-                    if gt_value == 0:
-                        close_enough = abs(pred_value) <= numerical_tolerance
-                    else:
-                        close_enough = abs((pred_value - gt_value) / gt_value) <= numerical_tolerance
-                        
-                    if close_enough:
+                    # Use Gurobi test_optimality function for more robust comparison
+                    optimality_result = test_optimality(code, float(ground_truth))
+                    if optimality_result == "correct":
                         correctness_metrics["mathematical_accuracy"] = True
             except (ValueError, TypeError, ZeroDivisionError):
                 pass

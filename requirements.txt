@@ -26,3 +26,4 @@ scipy
 packaging
 sentencepiece
 coptpy
+gurobipy
