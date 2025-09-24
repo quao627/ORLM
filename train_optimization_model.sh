@@ -21,7 +21,7 @@ TOTAL_BATCH_SIZE=16  # Total effective batch size across all GPUs
 PREPROCESSING_NUM_WORKERS=0  # Number of workers for data preprocessing
 MAX_SEQ_LENGTH=8192  # Maximum sequence length (can use full context)
 LEARNING_RATE=2e-5  # Learning rate (can be higher with larger batch size)
-NUM_TRAIN_EPOCHS=5  # Number of training epochs (can train longer)
+NUM_TRAIN_EPOCHS=10  # Number of training epochs (can train longer)
 
 # Advanced Options
 USE_LORA=false  # Set to false for full parameter tuning

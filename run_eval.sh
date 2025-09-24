@@ -12,5 +12,5 @@ datasets=(
 )
 
 for dataset in "${datasets[@]}"; do
-    CUDA_VISIBLE_DEVICES=1 python eval.py --model_name_or_path /orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--AlphaOpt_ORLM_Meta-Llama-3-8B_ft/ --tensor_parallel_size 1 --test_file ../baseline_test_data/$dataset --output_file results/orlm_ft_100/$dataset --verbose
+    CUDA_VISIBLE_DEVICES=1 python eval.py --model_name_or_path /orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--AlphaOpt_ORLM_Meta-Llama-3-8B-Instruct_ft --tensor_parallel_size 1 --test_file ../baseline_test_data/$dataset --output_file results/orlm_Instruct_ft_100/$dataset --verbose
 done
