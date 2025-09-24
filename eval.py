@@ -198,7 +198,7 @@ def main(args):
         sample = [{"prompt": prompt, "ground_truth": None}]
 
     # Init model
-    model = LLM(model=args.model_name_or_path, tensor_parallel_size=args.tensor_parallel_size)
+    model = LLM(model=args.model_name_or_path, tensor_parallel_size=args.tensor_parallel_size, gpu_memory_utilization=args.gpu_memory_utilization)
     print("init model done.")
     stop_tokens = ["</s>"]
     
@@ -326,6 +326,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Evaluate optimization code generation with correctness assessment")
     parser.add_argument("--model_name_or_path", type=str, required=True, help="Path to the model")
     parser.add_argument("--tensor_parallel_size", type=int, default=8, help="Number of GPUs for tensor parallelism")
+    parser.add_argument("--gpu_memory_utilization", type=float, default=0.8, help="GPU memory utilization ratio")
     parser.add_argument("--topk", type=int, default=1, help="Number of responses to generate per prompt")
     parser.add_argument("--decoding_method", type=str, default="greedy", choices=["greedy", "sampling"], 
                        help="Decoding method")
