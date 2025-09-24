@@ -158,7 +158,7 @@ def main(args):
         sample = [{"prompt": prompt, "ground_truth": None}]
 
     # Init model
-    model = LLM(model=args.model_name_or_path, tensor_parallel_size=args.tensor_parallel_size, gpu_memory_utilization=args.gpu_memory_utilization)
+    model = LLM(model=args.model_name_or_path, tensor_parallel_size=args.tensor_parallel_size, gpu_memory_utilization=args.gpu_memory_utilization, trust_remote_code=True)
     print("init model done.")
     stop_tokens = ["</s>"]
     
