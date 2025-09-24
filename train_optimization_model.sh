@@ -9,7 +9,7 @@
 
 # Model and Data Paths
 MODEL_NAME_OR_PATH="meta-llama/Meta-Llama-3-8B"  # LLaMA-3-8B model
-DATA_PATH="train_test_data/converted_data_messages_new_100.json"  # Your converted data
+# DATA_PATH="train_test_data/converted_data_messages_new_100.json"  # Your converted data
 SAVE_PATH="./output_llama3_8b_full_tuning"  # Where to save the model
 
 # Training Configuration
@@ -55,7 +55,7 @@ echo "==============================================="
 if [ ! -f "$DATA_PATH" ]; then
     echo "❌ Error: Data file not found at $DATA_PATH"
     echo "Please run the data conversion script first:"
-    echo "python convert_data_for_finetuning.py --input_file train_test_data/train_data_4o_new_100.json --output_file $DATA_PATH --format messages"
+    echo "python convert_data_for_finetuning.py --input_file train_test_data/train_data_4o_new_100.json --output_file $DATA_PATH --format prompt_completion"
     exit 1
 fi
 

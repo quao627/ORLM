@@ -20,7 +20,7 @@ from transformers import (
     AutoTokenizer,
     LlamaTokenizer,
     HfArgumentParser,
-    DataCollatorForLanguageModeling,
+    DataCollatorForSeq2Seq,
     set_seed,
     GPTNeoXTokenizerFast,
     GPT2Tokenizer,
@@ -184,7 +184,7 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=None,
         tokenizer=tokenizer,
-        data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
+        data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model),
         preprocess_logits_for_metrics=None,
         compute_metrics=None,
     )
