@@ -244,7 +244,7 @@ def main(args):
                 overall_metrics["code_extraction_success"] += 1
                 
                 # Assess correctness
-                ground_truth = example.get("ground_truth")
+                ground_truth = example.get(args.answer_field)
                 correctness_metrics, execution_output = assess_code_correctness(
                     extracted_code, ground_truth, args.numerical_tolerance, args.timeout)
                 
