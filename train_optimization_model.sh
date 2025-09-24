@@ -13,13 +13,13 @@ DATA_PATH="train_test_data/converted_data_messages.json"  # Your converted data
 SAVE_PATH="./output_llama3_8b_full_tuning"  # Where to save the model
 
 # Training Configuration
-NUM_GPUS=8  # Number of GPUs available (increased for full tuning)
-BATCH_SIZE_PER_GPU=1  # Batch size per GPU (adjust based on GPU memory)
-TOTAL_BATCH_SIZE=32  # Total effective batch size across all GPUs
+NUM_GPUS=2  # Number of H200 GPUs available
+BATCH_SIZE_PER_GPU=4  # Batch size per GPU (optimized for H200 140GB)
+TOTAL_BATCH_SIZE=16  # Total effective batch size across all GPUs
 PREPROCESSING_NUM_WORKERS=8  # Number of workers for data preprocessing
-MAX_SEQ_LENGTH=4096  # Maximum sequence length (adjust based on your data)
-LEARNING_RATE=1e-5  # Learning rate (lower for full parameter tuning)
-NUM_TRAIN_EPOCHS=2  # Number of training epochs (reduced for full tuning)
+MAX_SEQ_LENGTH=8192  # Maximum sequence length (can use full context)
+LEARNING_RATE=2e-5  # Learning rate (can be higher with larger batch size)
+NUM_TRAIN_EPOCHS=3  # Number of training epochs (can train longer)
 
 # Advanced Options
 USE_LORA=false  # Set to false for full parameter tuning
@@ -60,8 +60,8 @@ if [ ! -f "$DATA_PATH" ]; then
 fi
 
 # Check if DeepSpeed config exists
-if [ ! -f "train/configs/stage3_no_offloading_bf16.json" ]; then
-    echo "❌ Error: DeepSpeed config not found at train/configs/stage3_no_offloading_bf16.json"
+if [ ! -f "train/configs/h200_optimized_bf16.json" ]; then
+    echo "❌ Error: DeepSpeed config not found at train/configs/h200_optimized_bf16.json"
     exit 1
 fi
 
@@ -94,7 +94,7 @@ torchrun \
     --logging_steps 5 \
     --report_to "tensorboard" \
     --gradient_checkpointing True \
-    --deepspeed train/configs/stage3_no_offloading_bf16.json \
+    --deepspeed train/configs/h200_optimized_bf16.json \
     --overwrite_output_dir \
     --bf16 True \
     --use_lora $USE_LORA \
