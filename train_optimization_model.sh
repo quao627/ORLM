@@ -21,7 +21,7 @@ TOTAL_BATCH_SIZE=16  # Total effective batch size across all GPUs
 PREPROCESSING_NUM_WORKERS=0  # Number of workers for data preprocessing
 MAX_SEQ_LENGTH=8192  # Maximum sequence length (can use full context)
 LEARNING_RATE=2e-5  # Learning rate (can be higher with larger batch size)
-NUM_TRAIN_EPOCHS=3  # Number of training epochs (can train longer)
+NUM_TRAIN_EPOCHS=5  # Number of training epochs (can train longer)
 
 # Advanced Options
 USE_LORA=false  # Set to false for full parameter tuning
@@ -83,9 +83,9 @@ torchrun \
     --per_device_eval_batch_size $BATCH_SIZE_PER_GPU \
     --gradient_accumulation_steps $GRADIENT_ACC_STEPS \
     --eval_strategy "no" \
-    --save_strategy "steps" \
+    --save_strategy "no" \
     --save_steps 500 \
-    --save_total_limit 2 \
+    --save_total_limit 1 \
     --preprocessing_num_workers $PREPROCESSING_NUM_WORKERS \
     --ddp_timeout 14400 \
     --max_seq_length $MAX_SEQ_LENGTH \
