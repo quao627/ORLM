@@ -98,7 +98,7 @@ torchrun \
     --gradient_checkpointing True \
     --deepspeed train/configs/h200_optimized_bf16.json \
     --overwrite_output_dir \
-    --bf16 False \
+    --bf16 True \
     --use_lora $USE_LORA \
     --use_auth_token $USE_AUTH_TOKEN \
     --remove_unused_columns False
