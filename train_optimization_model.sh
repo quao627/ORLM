@@ -15,9 +15,9 @@ DATA_PATH="train_test_data/converted_data_messages_new_100.json"  # Your convert
 SAVE_PATH="/orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--AlphaOpt_ORLM_Meta-Llama-3-8B-Instruct_ft"
 
 # Training Configuration
-NUM_GPUS=2  # Number of H200 GPUs available
+NUM_GPUS=1  # Number of GPUs to use (set to 1 for single GPU training)
 BATCH_SIZE_PER_GPU=4  # Batch size per GPU (optimized for H200 140GB)
-TOTAL_BATCH_SIZE=16  # Total effective batch size across all GPUs
+TOTAL_BATCH_SIZE=4  # Total effective batch size (same as per GPU when using 1 GPU)
 PREPROCESSING_NUM_WORKERS=0  # Number of workers for data preprocessing
 MAX_SEQ_LENGTH=8192  # Maximum sequence length (can use full context)
 LEARNING_RATE=2e-5  # Learning rate (can be higher with larger batch size)
@@ -72,6 +72,9 @@ echo "✅ All files found. Starting training..."
 # =============================================================================
 # TRAINING COMMAND
 # =============================================================================
+
+# Set CUDA_VISIBLE_DEVICES to use only GPU 1
+export CUDA_VISIBLE_DEVICES=1
 
 torchrun \
     --nproc_per_node $NUM_GPUS \
