@@ -1,7 +1,4 @@
 {
-    "bf16": {
-        "enabled": "auto"
-    },
     "optimizer": {
         "type": "AdamW",
         "params": {

@@ -11,7 +11,8 @@
 MODEL_NAME_OR_PATH="meta-llama/Meta-Llama-3-8B"  # LLaMA-3-8B model
 # DATA_PATH="train_test_data/converted_data_messages_new_100.json"  # Your converted data
 DATA_PATH="train_test_data/converted_data_prompt_completion_new_100.json"  # Your converted data
-SAVE_PATH="./output_llama3_8b_full_tuning"  # Where to save the model
+## use the base model name and add the new model name
+SAVE_PATH="/orcd/scratch/seedfund/001/multimodal/qua/huggingface/hub/models--AlphaOpt_ORLM" + "Llama-3-8B" + "full_tuning"
 
 # Training Configuration
 NUM_GPUS=2  # Number of H200 GPUs available
@@ -97,7 +98,7 @@ torchrun \
     --gradient_checkpointing True \
     --deepspeed train/configs/h200_optimized_bf16.json \
     --overwrite_output_dir \
-    --bf16 True \
+    --bf16 False \
     --use_lora $USE_LORA \
     --use_auth_token $USE_AUTH_TOKEN \
     --remove_unused_columns False
