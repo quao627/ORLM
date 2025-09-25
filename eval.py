@@ -245,7 +245,9 @@ def main(args):
         print(f"Results saved to {args.output_file}")
     
     # Calculate and display final metrics
-    final_metrics = {}
+    final_metrics = {
+        "total_samples": overall_metrics["total_samples"]
+    }
     for metric in ["execution_success", "mathematical_accuracy", "code_extraction_success"]:
         if overall_metrics["total_samples"] > 0:
             final_metrics[metric] = overall_metrics[metric] / overall_metrics["total_samples"]
